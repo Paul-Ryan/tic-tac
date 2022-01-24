@@ -1,0 +1,38 @@
+#root {
+  --board-width: 50rem;
+  --boad-height: 50rem;
+}
+
+.header {
+  margin: 0 auto;
+}
+
+.tic-tac {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.board {
+  display: flex;
+  margin: 5rem auto 3rem;
+  flex-wrap: wrap;
+  width: 30rem;
+}
+
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 8rem;
+  font-family: Helvetica, Arial, sans-serif;
+  width: 10rem;
+  height: 10rem;
+  box-sizing: border-box;
+  border: 1px solid green;
+}
+
+.buttons {
+  display: flex;
+  margin: 0 auto;
+}
