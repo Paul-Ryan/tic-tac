@@ -10,6 +10,10 @@
   margin: 0 auto;
 }
 
+.hidden { 
+  opacity: 0;
+}
+
 .tic-tac {
   display: flex;
   flex-direction: column;
@@ -60,4 +64,9 @@
 .buttons {
   display: flex;
   margin: 0 auto;
+}
+
+.winner {
+  margin: 0 auto;
+  height: 1.5rem;
 }

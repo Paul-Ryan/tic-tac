@@ -1,18 +1,21 @@
 // module pattern - invoked function, single instance of module
 const GameBoard = (() => {
   let board = new Array(null, null, null, null, null, null, null, null, null);
+  const squares = document.querySelectorAll(".square");
   const getBoard = () => board;
 
   const resetBoard = (disable = false) => {
     board = board.map(() => null);
     const squares = document.querySelectorAll(".square");
     toggleDisabled();
-    squares.forEach((square) => square.classList);
     displayController.renderBoard();
   };
 
+  const disableBoard = () => {
+    squares.forEach((square) => square.classList.add("disabled"));
+  };
+
   const toggleDisabled = () => {
-    const squares = document.querySelectorAll(".square");
     squares.forEach((square) => square.classList.toggle("disabled"));
   };
 
@@ -26,16 +29,21 @@ const GameBoard = (() => {
     const { target } = event;
     const idx = target.dataset.id;
     const playerSymbol = gameController?.getCurrentPlayer()?.getSymbol();
+    let winner;
 
     if (board[idx] === null && playerSymbol) {
       board[idx] = playerSymbol;
       displayController.renderBoard();
       gameController.changePlayer();
-      gameController.checkForWin();
+      winner = gameController.checkForWin();
+    }
+
+    if (winner) {
+      gameController.endGame(winner);
     }
   };
 
-  return { getBoard, resetBoard, updateSpace: handleSquare };
+  return { disableBoard, getBoard, resetBoard, updateSpace: handleSquare };
 })();
 
 // factory function - returns an object
@@ -76,7 +84,8 @@ const gameController = (() => {
       const match = checkMatch(board[one], board[two], board[three]);
       return match && !matchFound ? match : matchFound;
     }, "");
-    console.log("winner", winner);
+
+    return winner;
   };
 
   const getCurrentPlayer = () => players[currentPlayerIdx];
@@ -103,9 +112,15 @@ const gameController = (() => {
   };
 
   const resetGame = () => (gameOver = false);
-  const endGame = () => (gameOver = true);
+  const endGame = (winner) => {
+    if (winner) {
+      displayController.setWinner(winner);
+      GameBoard.disableBoard();
+    }
+    gameOver = true;
+  };
 
-  return { changePlayer, checkForWin, getCurrentPlayer, start };
+  return { changePlayer, checkForWin, endGame, getCurrentPlayer, start };
 })();
 
 const displayController = (() => {
@@ -129,5 +144,12 @@ const displayController = (() => {
     });
   })();
 
-  return { renderBoard };
+  const setWinner = (winner) => {
+    const header = document.querySelector(".winner");
+    const message = `${winner} is the winner!`;
+    header.innerText = message;
+    header.classList.remove("hidden");
+  };
+
+  return { renderBoard, setWinner };
 })();
