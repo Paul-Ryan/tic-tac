@@ -1,7 +1,10 @@
 #root {
   --board-width: 50rem;
   --boad-height: 50rem;
+  --a-border: : 1px solid purple;
+  --line-width: 5px;
 }
+
 
 .header {
   margin: 0 auto;
@@ -14,6 +17,7 @@
 }
 
 .board {
+  color:blueviolet;
   display: flex;
   margin: 5rem auto 3rem;
   flex-wrap: wrap;
@@ -21,15 +25,36 @@
 }
 
 .square {
+  cursor: default;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 8rem;
+  font-size: 6rem;
   font-family: Helvetica, Arial, sans-serif;
   width: 10rem;
   height: 10rem;
   box-sizing: border-box;
-  border: 1px solid green;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.right {
+  border-right: 5px solid purple;
+}
+
+.left {
+  border-left: 5px solid purple;
+}
+
+.top {
+  border-top: 5px solid purple;
+}
+
+.bottom {
+  border-bottom: 5px solid purple;
 }
 
 .buttons {
