@@ -1,12 +1,13 @@
 // module pattern - invoked function, single instance of module
-const GameBoard = (() => {
-  let board = new Array(null, null, null, null, null, null, null, null, null);
+// this is basically an object
+// Controls Board logistics
+const gameBoard = (() => {
+  let board = Array(9).fill(null);
   const squares = document.querySelectorAll(".square");
   const getBoard = () => board;
 
   const resetBoard = (disable = false) => {
     board = board.map(() => null);
-    const squares = document.querySelectorAll(".square");
     toggleDisabled();
     displayController.renderBoard();
   };
@@ -19,27 +20,25 @@ const GameBoard = (() => {
     squares.forEach((square) => square.classList.toggle("disabled"));
   };
 
-  const clickSquare = (event) => {
-    // check if square is free
-    // update square for current player
-    // return if success or failure
-  };
-
   const handleSquare = (event) => {
     const { target } = event;
     const idx = target.dataset.id;
     const playerSymbol = gameController?.getCurrentPlayer()?.getSymbol();
-    let winner;
+    let winner, draw;
 
     if (board[idx] === null && playerSymbol) {
       board[idx] = playerSymbol;
       displayController.renderBoard();
       gameController.changePlayer();
       winner = gameController.checkForWin();
+      draw = gameController.checkForTie();
     }
 
     if (winner) {
       gameController.endGame(winner);
+    }
+    if (draw) {
+      gameController.endGame();
     }
   };
 
@@ -54,7 +53,10 @@ const Player = (name, symbol) => {
   return { getName, getSymbol };
 };
 
+// Controls game logic
 const gameController = (() => {
+  const gameStates = ["new", "playing", "over"];
+  let currentGameState = gameStates[0];
   let gameOver = true;
   let players = [];
   let currentPlayerIdx = 0;
@@ -63,7 +65,7 @@ const gameController = (() => {
   };
 
   const checkForWin = () => {
-    const board = GameBoard.getBoard();
+    const board = gameBoard.getBoard();
     const winningPatterns = [
       [0, 1, 2],
       [3, 4, 5],
@@ -88,49 +90,75 @@ const gameController = (() => {
     return winner;
   };
 
+  const checkForTie = () => {
+    const board = gameBoard.getBoard();
+    const isTied = board.every((space) => space);
+    return isTied;
+  };
+
   const getCurrentPlayer = () => players[currentPlayerIdx];
 
   const start = () => {
-    const startButton = document.querySelector(".start");
-    const newText = GameBoard.getBoard().some((value) => value)
-      ? "Start"
-      : "Reset";
-    startButton.innerText = newText;
-
     if (gameOver) {
       const player1 = Player("Paul", "X");
       const player2 = Player("Bart", "O");
-
       players.push(player1, player2);
-      GameBoard.resetBoard(false);
+      gameBoard.resetBoard(false);
+      displayController.resetDisplay();
       resetGame();
     } else {
-      GameBoard.resetBoard(true);
+      gameBoard.resetBoard(true);
       players = [];
       endGame();
     }
   };
 
   const resetGame = () => (gameOver = false);
+
   const endGame = (winner) => {
     if (winner) {
       displayController.setWinner(winner);
-      GameBoard.disableBoard();
+    } else {
+      displayController.setTie();
     }
+    gameBoard.disableBoard();
     gameOver = true;
   };
 
-  return { changePlayer, checkForWin, endGame, getCurrentPlayer, start };
+  return {
+    changePlayer,
+    checkForTie,
+    checkForWin,
+    currentGameState,
+    endGame,
+    gameStates,
+    getCurrentPlayer,
+    start,
+  };
 })();
 
+// Controls display of page
 const displayController = (() => {
   const renderBoard = () => {
     const squares = document.querySelectorAll(".square");
-    const board = GameBoard.getBoard();
+    const board = gameBoard.getBoard();
     squares.forEach((square) => {
       const idx = square.dataset.id;
       square.innerHTML = board[idx];
     });
+  };
+
+  const updateStartButton = (gameState) => {
+    const gameStates = gameController.gameStates;
+    const startButton = document.querySelector(".start");
+
+    if (gameState === gameStates[0]) {
+      startButton.innerText = "Start";
+    }
+
+    if (gameState === gameStates[1] || gameState === gameStates[2]) {
+      startButton.innerText = "Reset";
+    }
   };
 
   const _init = (() => {
@@ -140,9 +168,16 @@ const displayController = (() => {
 
     startButton.addEventListener("click", gameController.start);
     squares.forEach((square) => {
-      square.addEventListener("click", GameBoard.updateSpace);
+      square.addEventListener("click", gameBoard.updateSpace);
     });
   })();
+
+  const setTie = () => {
+    const header = document.querySelector(".winner");
+    const message = `Tie game!`;
+    header.innerText = message;
+    header.classList.remove("hidden");
+  };
 
   const setWinner = (winner) => {
     const header = document.querySelector(".winner");
@@ -151,5 +186,10 @@ const displayController = (() => {
     header.classList.remove("hidden");
   };
 
-  return { renderBoard, setWinner };
+  const resetDisplay = () => {
+    const header = document.querySelector(".winner");
+    header.classList.add("hidden");
+  };
+
+  return { renderBoard, resetDisplay, setTie, setWinner, updateStartButton };
 })();
